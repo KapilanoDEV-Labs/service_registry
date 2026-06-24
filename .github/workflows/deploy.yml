@@ -1,0 +1,58 @@
+name: Build and Deploy Service Registry
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  DOCKER_API_VERSION: "1.41"
+
+jobs:
+  build-and-push:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build Project JAR with Maven
+      run: ./mvnw clean package -DskipTests
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/service-registry:latest
+
+  deploy:
+    runs-on: self-hosted
+    needs: build-and-push
+    steps:
+    - name: SSH and Run Application Container
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ vars.VM_USER }}@${{ vars.VM_HOST }} << 'EOF'
+          # Login to Docker Hub inside the VM
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          
+          # Tear down any running instance smoothly
+          docker stop service-registry-container || true
+          docker rm service-registry-container || true
+
+          # Force the VM to fetch the newest image from Docker Hub
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/service-registry:latest
+          
+          # Spin up the fresh container on Host Port 8761 mapping cleanly to internal 8761
+          docker run -d --name service-registry-container -p 8761:8761 --restart always ${{ secrets.DOCKERHUB_USERNAME }}/service-registry:latest
+        EOF
