@@ -26,7 +26,8 @@ To the quiz and questions service application.properties you need a name:
 spring.application.name=service.registry
 server.port=8761
 
-eureka.instance.hostname=localhost
+#When your other microservices register with Eureka, it will advertise its location using this hostname
+eureka.instance.hostname=eureka-server-01
 eureka.client.fetch-registry=false // Don't want to fetch the repository
 eureka.client.register-with-eureka=false // Don't want to register with itself
 ```
