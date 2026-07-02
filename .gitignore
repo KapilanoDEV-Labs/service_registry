@@ -1,33 +1,26 @@
-HELP.md
+# --- Target and Compilation Build Artifacts ---
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+*.jar
+*.war
+*.ear
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
+# --- IntelliJ IDEA Local Settings ---
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# --- macOS System Files ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
 
-### VS Code ###
-.vscode/
+# --- Help Files & Logs ---
+HELP.md
+*.log
+logs/
+
+# --- Build System Wrapper Local Storage ---
+.mvn/wrapper/maven-wrapper.jar
